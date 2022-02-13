@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "432237058700",
+    "project_id": "nearbyfinder-5071e",
+    "storage_bucket": "nearbyfinder-5071e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:432237058700:android:72d7ca4b6fe62aa95979a9",
+        "android_client_info": {
+          "package_name": "com.example.nearbyfinder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "432237058700-ekp9c1so9qv6p045ifnsk7aec2eghetk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6xad-j_PlR70jWp6lcVlwUSZXEzrQG0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "432237058700-ekp9c1so9qv6p045ifnsk7aec2eghetk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

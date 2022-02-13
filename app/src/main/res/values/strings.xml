@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">My Place</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="login_string">Already Have A Account?Login Here!</string>
+</resources>
