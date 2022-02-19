@@ -14,9 +14,12 @@
         <!-- Customize your theme here. -->
     </style>
 
-
+    <style name="MapsTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar" />
     <style name="LoginTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
         <item name="boxStrokeColor">#296D98</item>
         <item name="boxStrokeWidth">1dp</item>
     </style>
-</resources>
+
+    <style name="CustomAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/background_dialog</item>
+    </style></resources>

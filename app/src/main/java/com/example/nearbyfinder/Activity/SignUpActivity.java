@@ -1,5 +1,6 @@
 package com.example.nearbyfinder.Activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,6 +10,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+import com.example.nearbyfinder.R;
 import com.example.nearbyfinder.WebServices.UserModel;
 import com.example.nearbyfinder.databinding.ActivitySignUpBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,10 +25,9 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class SignUpActivity extends AppCompatActivity {
 
+    private static final String TAG ="PHONE NUMBER CHECKING" ;
     private ActivitySignUpBinding binding;
-    private String email, username, password,repassword;
-
-    // private StorageReference storageReference;
+    private String email, username, password,repassword,phonenumber;
 
 
     @Override
@@ -35,6 +37,10 @@ public class SignUpActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         //storageReference = FirebaseStorage.getInstance().getReference();
+        Glide.with(this).load(R.raw.markerpng).into(binding.imgPick);
+
+
+
 
         binding.btnBack.setOnClickListener(view -> {
             onBackPressed();
@@ -61,7 +67,7 @@ public class SignUpActivity extends AppCompatActivity {
         email = binding.edtEmail.getText().toString().trim();
         password = binding.edtPassword.getText().toString().trim();
         repassword=binding.edtConfirmPassword.getText().toString().trim();
-
+        phonenumber=binding.edtPhonenumber.getText().toString().trim();
         boolean flag = false;
         View requestView = null;
 
@@ -81,6 +87,10 @@ public class SignUpActivity extends AppCompatActivity {
             binding.edtConfirmPassword.setError("Field is required");
             flag = true;
             requestView = binding.edtPassword;
+        } else if (phonenumber.isEmpty()) {
+            binding.edtPhonenumber.setError("Field is required");
+            flag = true;
+            requestView = binding.edtPhonenumber;
         } else if(!password.equals(repassword)){
             binding.edtConfirmPassword.setError("Password not same,Re-enter");
             flag = true;
@@ -103,6 +113,7 @@ public class SignUpActivity extends AppCompatActivity {
         binding.idPBLoading.setVisibility(View.VISIBLE);
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+        DatabaseReference drefpattern=FirebaseDatabase.getInstance().getReference("User_Credential");
         firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> singUp) {
@@ -119,7 +130,7 @@ public class SignUpActivity extends AppCompatActivity {
 
                                     if (task.isSuccessful()) {
                                         UserModel userModel = new UserModel(email,
-                                                username, true);
+                                                username,phonenumber, true);
                                         databaseReference.child(firebaseAuth.getUid())
                                                 .setValue(userModel).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
@@ -128,8 +139,14 @@ public class SignUpActivity extends AppCompatActivity {
                                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                             @Override
                                                             public void onSuccess(Void aVoid) {
+                                                                drefpattern.child(phonenumber).setValue(email);
                                                                 binding.idPBLoading.setVisibility(View.GONE);
-                                                                Toast.makeText(SignUpActivity.this, "Verify email", Toast.LENGTH_SHORT).show();
+                                                                // send the user to verify the phone
+//                                                                Intent phone = new Intent(SignUpActivity.this,PhoneVerfifcationActivity.class);
+//                                                                phone.putExtra("phone","+91"+phonenumber);
+                                                                Toast.makeText(SignUpActivity.this, "Verify your email,Mail has been sent", Toast.LENGTH_LONG).show();
+//                                                                startActivity(phone);
+//
                                                                 onBackPressed();
                                                             }
                                                         });
@@ -137,6 +154,7 @@ public class SignUpActivity extends AppCompatActivity {
                                             }
 
                                         });
+
                                     } else {
                                         binding.idPBLoading.setVisibility(View.GONE);
                                         Log.d("TAG", "onComplete: Update Profile" + task.getException());

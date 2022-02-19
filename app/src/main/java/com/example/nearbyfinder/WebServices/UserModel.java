@@ -1,15 +1,19 @@
 package com.example.nearbyfinder.WebServices;
 
 public class UserModel {
-    String email, username;
+    String email;
+    String username;
+    String phonenumber;
     boolean isNotificationEnable;
 
     public UserModel() {
     }
 
-    public UserModel(String email, String username, boolean isNotificationEnable) {
+
+    public UserModel(String email, String username, String phonenumber,boolean isNotificationEnable) {
         this.email = email;
         this.username = username;
+        this.phonenumber = phonenumber;
 //        this.image = image;
         this.isNotificationEnable = isNotificationEnable;
     }
@@ -20,6 +24,13 @@ public class UserModel {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+    public String getPhonenumber() {
+        return phonenumber;
+    }
+
+    public void setPhonenumber(String phonenumber) {
+        this.phonenumber = phonenumber;
     }
 
     public String getUsername() {

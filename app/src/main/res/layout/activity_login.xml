@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/teal_700"
+    android:background="@color/black"
     tools:context=".Activity.LoginActivity">
 
    <!-- <ImageView
@@ -52,7 +52,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:hint="Email"
+                android:hint="Enter Email or Phone Number"
                 android:fontFamily="sans-serif"
                 android:textColor="@color/white"
                 android:textColorHint="@color/white"
@@ -62,12 +62,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:backgroundTint="@color/white"
-                    android:drawableStart="@drawable/ic_email"
+                    android:drawableStart="@drawable/ic_verified"
                     android:drawablePadding="10dp"
                     android:drawableTint="@color/white"
                     android:ems="10"
                     android:importantForAutofill="no"
-                    android:inputType="textEmailAddress"
                     android:maxLines="1"
                     android:textColor="@color/white"
                     android:textColorHint="@color/white"
@@ -124,6 +123,7 @@
                 android:backgroundTint="@color/transparentColor"
                 android:padding="15dp"
                 android:text="Login"
+                android:textColor="@color/white"
                 android:textStyle="bold"
                 app:cornerRadius="20dp"
                 app:elevation="10dp"
@@ -137,66 +137,14 @@
                 android:layout_marginHorizontal="30dp"
                 android:layout_marginTop="10dp"
                 android:padding="15dp"
-                android:text="Signup"
+                android:text="Don,t have Account,Click here "
+                android:textSize="12sp"
                 android:textStyle="bold"
                 app:cornerRadius="20dp"
                 app:elevation="10dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="30dp"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <View
-                    android:layout_width="120dp"
-                    android:layout_height="1dp"
-                    android:background="@color/white" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:text="OR"
-                    android:textColor="@color/white" />
-
-                <View
-                    android:layout_width="120dp"
-                    android:layout_height="1dp"
-                    android:background="@color/white" />
-            </LinearLayout>
 
         </LinearLayout>
-
-      <!--  <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.8"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/btnFacebook"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_facebook" />
-
-            <ImageView
-                android:id="@+id/btnGoogle"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginHorizontal="20dp"
-                android:src="@drawable/ic_google" />
-
-            <ImageView
-                android:id="@+id/btnInstagram"
-                android:layout_width="35dp"
-                android:layout_height="32dp"
-                android:layout_marginTop="3dp"
-                android:src="@drawable/ic_instagram" />
-
-        </LinearLayout>-->
 
     </LinearLayout>
 

@@ -1,27 +1,27 @@
 package com.example.nearbyfinder;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Looper;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.ApiException;
+import com.example.nearbyfinder.Activity.LoginActivity;
+import com.example.nearbyfinder.Activity.AccountsActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -32,40 +32,28 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
-import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.TypeFilter;
-import com.google.android.libraries.places.api.net.FetchPlaceRequest;
-import com.google.android.libraries.places.api.net.FetchPlaceResponse;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
 import com.mancj.materialsearchbar.MaterialSearchBar;
-import com.mancj.materialsearchbar.adapter.SuggestionsAdapter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private static final String TAG = "MAPSACTIVTY";
     private GoogleMap mMap;
     private final int LOCATION_PERMISSION_REQUEST = 1;
     private boolean mLocationPermissionGranted,isTrafficEnable;
-
+private FirebaseAuth mAuth;
 
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
@@ -76,7 +64,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private Location mLastKnownLocation;
-    private GoogleMap.InfoWindowAdapter infoWindowAdapter;
     private Location currentLocation;
     private MaterialSearchBar materialSearchBar;
 
@@ -87,11 +74,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle("Maps");
          FloatingActionButton btnMapType=(FloatingActionButton)findViewById(R.id.btnMapType);
         FloatingActionButton enableTraffic=(FloatingActionButton)findViewById(R.id.enableTraffic);
         FloatingActionButton currentLocaton=(FloatingActionButton)findViewById(R.id.currentLocation);
+        mAuth=FirebaseAuth.getInstance();
 
-        materialSearchBar = findViewById(R.id.searchBar);
+//        materialSearchBar = findViewById(R.id.searchBar);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -138,12 +128,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         });
 
-
+// Construct a FusedLocationProviderClient.
+//        fusedLocationProviderClient=LocationServices.getFusedLocationProviderClient(this);
         currentLocaton.setOnClickListener(currentLocation -> getCurrentLocation());
 
-        Places.initialize(MapsActivity.this, getString(R.string.google_maps_key));
-        placesClient = Places.createClient(this);
-        final AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+//        Places.initialize(MapsActivity.this, getString(R.string.google_maps_key));
+//        placesClient = Places.createClient(this);
+//        final AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
 
         Log.i("PlaceaPI call", "onCreate: "+"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" +
                 "-33.8670522,151.1957362&radius=500&types=food&name=harbour&key="+"AIzaSyA812zqb8ftSKFuyAJwMcsk0vM7zuspixw");
@@ -418,28 +409,47 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mLocationPermissionGranted = false;
             return;
         }
-        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                currentLocation = location;
-//                infoWindowAdapter = null;
-//                infoWindowAdapter = new GoogleMap.InfoWindowAdapter(currentLocation, requireContext());
-//                mMap.setInfoWindowAdapter(infoWindowAdapter);
-                moveCameraToLocation(location);
+//        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+//            @Override
+//            public void onSuccess(Location location) {
+//                currentLocation = location;
+////                infoWindowAdapter = null;
+////                infoWindowAdapter = new GoogleMap.InfoWindowAdapter(currentLocation, requireContext());
+////                mMap.setInfoWindowAdapter(infoWindowAdapter);
+//                moveCameraToLocation(location);
+//
+//
+//            }
+//        });
+        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(
+                this, new OnCompleteListener<Location>() {
 
-
-            }
-        });
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        if (task.isSuccessful()) {
+                            // Set the map's camera position to the current location of the device.
+                            currentLocation = task.getResult();
+                            if (currentLocation != null) {
+                                moveCameraToLocation(currentLocation);
+                            } else {
+                                Log.d(TAG, "Current location is null. Using defaults.");
+                                Log.e(TAG, "Exception: %s"+ task.getException());
+                            }
+                        }
+                    }
+                });
     }
 
     private void moveCameraToLocation(Location location) {
+        Log.i(TAG, "moveCameraToLocation:"+location);
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new
                 LatLng(location.getLatitude(), location.getLongitude()), 17);
 
         MarkerOptions markerOptions = new MarkerOptions()
-                .position(new LatLng(location.getLatitude(), location.getLongitude()))
+                .position(new LatLng(location.getLatitude (), location.getLongitude()))
                 .title("Current Location")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                 .snippet(mAuth.getCurrentUser().getDisplayName());
         if (currentMarker != null) {
             currentMarker.remove();
         }
@@ -475,4 +485,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        //adding a click listner for option selected on below line.
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.sign_out_menu:
+                //displaying a toast message on user logged out inside on click.
+                Toast.makeText(getApplicationContext(), "User Logged Out", Toast.LENGTH_LONG).show();
+                //on below line we are signing out our user.
+                mAuth.signOut();
+                //on below line we are opening our login activity.
+                Intent i = new Intent(MapsActivity.this, LoginActivity.class);
+                startActivity(i);
+                this.finish();
+                return true;
+            case R.id.account:
+                Intent settingsIntent = new Intent(this, AccountsActivity.class);
+                startActivity(settingsIntent);
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @SuppressLint("RestrictedApi")
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //on below line we are inflating our menu file for displaying our menu options.
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        if(menu instanceof MenuBuilder){
+            MenuBuilder m = (MenuBuilder) menu;
+            m.setOptionalIconsVisible(true);
+        }
+        return true;
+    }
 }

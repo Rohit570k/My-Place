@@ -23,20 +23,20 @@ public class SplashActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
 
         ImageView imageView=(ImageView)findViewById(R.id.gifimage);
-        Glide.with(this).load(R.raw.markerpng).into(imageView);
+        //Glide.with(this).load(R.raw.locatin3).into(imageView);
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
 
-                if (firebaseAuth.getCurrentUser() != null) {
-                    startActivity(new Intent(SplashActivity.this, MapsActivity.class));
-                    finish();
-                } else {
+//                if (firebaseAuth.getCurrentUser() != null) {
+//                    startActivity(new Intent(SplashActivity.this, MapsActivity.class));
+//                    finish();
+//                } else {
                     startActivity(new Intent(SplashActivity.this, LoginActivity.class));
                     finish();
-                }
-
+//                }
+//
 
             }
         }, 3000);
