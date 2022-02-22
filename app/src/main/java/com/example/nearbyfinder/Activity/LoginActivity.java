@@ -4,13 +4,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.nearbyfinder.MapsActivity;
-import com.example.nearbyfinder.WebServices.UserModel;
+import com.example.nearbyfinder.R;
+import com.example.nearbyfinder.Model.UserModel;
 import com.example.nearbyfinder.databinding.ActivityLoginBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -35,9 +38,11 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+//        ImageView imageView=(ImageView)findViewById(R.id.loginimg);
+//        Glide.with(this).load(R.raw.mark).into(imageView);
         user = new UserModel();
         firebaseAuth = FirebaseAuth.getInstance();
         ref = FirebaseDatabase.getInstance().getReference("User_Credential");

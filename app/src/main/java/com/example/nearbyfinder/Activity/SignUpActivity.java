@@ -1,10 +1,8 @@
 package com.example.nearbyfinder.Activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -12,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.nearbyfinder.R;
-import com.example.nearbyfinder.WebServices.UserModel;
+import com.example.nearbyfinder.Model.UserModel;
 import com.example.nearbyfinder.databinding.ActivitySignUpBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;

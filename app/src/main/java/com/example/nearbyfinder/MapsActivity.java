@@ -6,11 +6,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -22,6 +27,12 @@ import android.widget.Toast;
 
 import com.example.nearbyfinder.Activity.LoginActivity;
 import com.example.nearbyfinder.Activity.AccountsActivity;
+import com.example.nearbyfinder.Constants.AllConstants;
+import com.example.nearbyfinder.Model.PlaceModel.TomResponseModel;
+import com.example.nearbyfinder.Model.PoiGroupSet;
+import com.example.nearbyfinder.WebServices.RetrofitApi;
+import com.example.nearbyfinder.WebServices.RetrofitClient;
+import com.example.nearbyfinder.Model.TomNearbyPlaceModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -32,20 +43,28 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.libraries.places.api.model.AutocompletePrediction;
 
-import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.gson.Gson;
 import com.mancj.materialsearchbar.MaterialSearchBar;
+import com.skyfishjy.library.RippleBackground;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -58,15 +77,20 @@ private FirebaseAuth mAuth;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
     private FusedLocationProviderClient fusedLocationProviderClient;
-    private PlacesClient placesClient;
-    private List<AutocompletePrediction> predictionList;
+    private RetrofitApi retrofitApi;
+    private int searchRadius=5000;
+    private PoiGroupSet selectedPoiGroupSet;
+//    private PlacesClient placesClient;
+//    private List<AutocompletePrediction> predictionList;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private Location mLastKnownLocation;
     private Location currentLocation;
     private MaterialSearchBar materialSearchBar;
+    private RippleBackground rippleBg;
 
+    private List<TomNearbyPlaceModel> tomNearbyPlaceModelList;
     private Marker currentMarker;
 
 
@@ -79,13 +103,34 @@ private FirebaseAuth mAuth;
          FloatingActionButton btnMapType=(FloatingActionButton)findViewById(R.id.btnMapType);
         FloatingActionButton enableTraffic=(FloatingActionButton)findViewById(R.id.enableTraffic);
         FloatingActionButton currentLocaton=(FloatingActionButton)findViewById(R.id.currentLocation);
+        ChipGroup chipGroup = (ChipGroup)findViewById(R.id.poiExampleGroup) ;
+        rippleBg=(RippleBackground)findViewById(R.id.ripple_bg) ;
         mAuth=FirebaseAuth.getInstance();
+        retrofitApi= RetrofitClient.getRetrofitClient().create(RetrofitApi.class);
+        tomNearbyPlaceModelList=new ArrayList<>();
 
 //        materialSearchBar = findViewById(R.id.searchBar);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        for (PoiGroupSet poiGroupSet : AllConstants.poiGroups) {
+
+            Chip chip = new Chip(MapsActivity.this);
+            chip.setText(poiGroupSet.getName());
+            chip.setId(poiGroupSet.getId());
+            chip.setPadding(8, 8, 8, 8);
+            chip.setTextColor(getResources().getColor(R.color.white, null));
+            chip.setChipBackgroundColor(getResources().getColorStateList(R.color.lightblack, null));
+            chip.setChipIcon(ResourcesCompat.getDrawable(getResources(), poiGroupSet.getDrawableId(), null));
+            chip.setCheckable(true);
+            chip.setCheckedIconVisible(false);
+
+            chipGroup.addView(chip);
+
+
+        }
 
         btnMapType.setOnClickListener(view -> {
             PopupMenu popupMenu = new PopupMenu(this, view);
@@ -125,13 +170,24 @@ private FirebaseAuth mAuth;
                     isTrafficEnable = true;
                 }
             }
+        });
 
+        currentLocaton.setOnClickListener(currentLocation -> getCurrentLocation());
+
+        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(ChipGroup group, int checkedId) {
+                if (checkedId != -1) {
+                    PoiGroupSet poiGroupSet = AllConstants.poiGroups.get(checkedId - 1);
+//                    binding.edtPlaceName.setText(placeModel.getName());
+                    selectedPoiGroupSet = poiGroupSet;
+                    getNearbyPlaces(poiGroupSet.getPoiCategoriesId());
+                }
+            }
         });
 
 // Construct a FusedLocationProviderClient.
 //        fusedLocationProviderClient=LocationServices.getFusedLocationProviderClient(this);
-        currentLocaton.setOnClickListener(currentLocation -> getCurrentLocation());
-
 //        Places.initialize(MapsActivity.this, getString(R.string.google_maps_key));
 //        placesClient = Places.createClient(this);
 //        final AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
@@ -253,6 +309,8 @@ private FirebaseAuth mAuth;
 //
 //            }
 //        });
+
+
     }
 
 
@@ -409,6 +467,9 @@ private FirebaseAuth mAuth;
             mLocationPermissionGranted = false;
             return;
         }
+        /** This was used earlier to get current location but BCZ ,
+         * onSuccess also passing when current location is null hence ,
+         * used onComplete Listener so that to make a check for that
 //        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
 //            @Override
 //            public void onSuccess(Location location) {
@@ -421,6 +482,7 @@ private FirebaseAuth mAuth;
 //
 //            }
 //        });
+         */
         fusedLocationProviderClient.getLastLocation().addOnCompleteListener(
                 this, new OnCompleteListener<Location>() {
 
@@ -452,8 +514,8 @@ private FirebaseAuth mAuth;
                  .snippet(mAuth.getCurrentUser().getDisplayName());
         if (currentMarker != null) {
             currentMarker.remove();
+            mMap.clear();
         }
-
         currentMarker = mMap.addMarker(markerOptions);
         currentMarker.setTag(703);
         mMap.animateCamera(cameraUpdate);
@@ -485,29 +547,102 @@ private FirebaseAuth mAuth;
         }
     }
 
+    private void getNearbyPlaces(String poiCatogeriesId){
+        rippleBg.startRippleAnimation();
+        String url ="https://api.tomtom.com/search/2/nearbySearch/.json?" +
+                "lat="+ currentLocation.getLatitude() + "&lon=" + currentLocation.getLongitude()
+                + "&limit=100" + "&countrySet=IN" + "&radius=" +searchRadius+
+                "&categorySet="+ poiCatogeriesId + "&view=IN" + "&openingHours=nextSevenDays" +
+                "&relatedPois=all" +
+                "&key=" + "MtUGzlQ1xgeImI1xMbxwolLWJXxYjU1B";
+
+        retrofitApi.getNearByPlaces(url).enqueue(new Callback<TomResponseModel>() {
+            @Override
+            public void onResponse(Call<TomResponseModel> call, Response<TomResponseModel> response) {
+                Log.i(TAG, "onResponse:JSONRESPONSE"+response.body());
+                Gson gson =new Gson();
+                String res =gson.toJson(response.body());
+                Log.i(TAG, "onResponse: JsonParsed"+res);
+                if(response.errorBody()==null){
+                    if(response.body()!= null) {
+                        if(response.body().getTomNearbyPlaceModelList()!=null&&response.body().getTomNearbyPlaceModelList().size()>0) {
+                            tomNearbyPlaceModelList.clear();
+                            mMap.clear();
+                            for (int i = 0; i < response.body().getTomNearbyPlaceModelList().size(); i++) {
+
+                                tomNearbyPlaceModelList.add(response.body().getTomNearbyPlaceModelList().get(i));
+                                addMarker(response.body().getTomNearbyPlaceModelList().get(i), i);
+                            }
+
+                        }else{
+                            mMap.clear();
+                            tomNearbyPlaceModelList.clear();
+                            //If not found in 5km then we add 1km to request
+                            //and again make a request aPi call
+                            searchRadius+=1000;
+                            getNearbyPlaces(poiCatogeriesId);
+                        }
+                    }
+                }else {
+                    Log.d("TAG", "onResponseERROR: " + response.errorBody());
+                    Toast.makeText(MapsActivity.this, "Error : " + response.errorBody(), Toast.LENGTH_SHORT).show();
+                }
+
+                rippleBg.stopRippleAnimation();
+            }
+
+            @Override
+            public void onFailure(Call<TomResponseModel> call, Throwable t) {
+                Log.d("TAG", "onFailure: " + t);
+                rippleBg.stopRippleAnimation();
+            }
+        });
+    }
+     private void addMarker(TomNearbyPlaceModel tomNearbyPlaceModel,int position){
+        MarkerOptions markerOptions =new MarkerOptions()
+                .position(new LatLng(tomNearbyPlaceModel.getPosition().getLat(),
+                        tomNearbyPlaceModel.getPosition().getLon()))
+                .title(tomNearbyPlaceModel.getPoi().getName())
+                .snippet(tomNearbyPlaceModel.getAddress().getFreeformAddress());
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        mMap.addMarker(markerOptions).setTag(position);
+         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new
+                 LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 14);
+         mMap.animateCamera(cameraUpdate);
+     }
+
+    private BitmapDescriptor getCustomIcon() {
+
+        Drawable background = ContextCompat.getDrawable(MapsActivity.this, R.drawable.mapiconshadow );
+       // background.setTint(getResources().getColor(R.color.quantum_googred900, null));
+        background.setBounds(0, 0, background.getMinimumWidth(), background.getMinimumHeight());
+        Bitmap bitmap = Bitmap.createBitmap(background.getMinimumWidth(), background.getMinimumHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        background.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         //adding a click listner for option selected on below line.
         int id = item.getItemId();
-        switch (id) {
-            case R.id.sign_out_menu:
-                //displaying a toast message on user logged out inside on click.
-                Toast.makeText(getApplicationContext(), "User Logged Out", Toast.LENGTH_LONG).show();
-                //on below line we are signing out our user.
-                mAuth.signOut();
-                //on below line we are opening our login activity.
-                Intent i = new Intent(MapsActivity.this, LoginActivity.class);
-                startActivity(i);
-                this.finish();
-                return true;
-            case R.id.account:
-                Intent settingsIntent = new Intent(this, AccountsActivity.class);
-                startActivity(settingsIntent);
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
+        //            case R.id.sign_out_menu:
+        //                //displaying a toast message on user logged out inside on click.
+        //                Toast.makeText(getApplicationContext(), "User Logged Out", Toast.LENGTH_LONG).show();
+        //                //on below line we are signing out our user.
+        //                mAuth.signOut();
+        //                //on below line we are opening our login activity.
+        //                Intent i = new Intent(MapsActivity.this, LoginActivity.class);
+        //                startActivity(i);
+        //                this.finish();
+        //                return true;
+        if (id == R.id.account) {
+            Intent settingsIntent = new Intent(this, AccountsActivity.class);
+            startActivity(settingsIntent);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @SuppressLint("RestrictedApi")
@@ -517,6 +652,7 @@ private FirebaseAuth mAuth;
         getMenuInflater().inflate(R.menu.main_menu, menu);
         if(menu instanceof MenuBuilder){
             MenuBuilder m = (MenuBuilder) menu;
+            //to visible the icon along with text
             m.setOptionalIconsVisible(true);
         }
         return true;

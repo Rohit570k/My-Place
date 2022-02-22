@@ -7,12 +7,7 @@
     android:background="@color/black"
     tools:context=".Activity.LoginActivity">
 
-   <!-- <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0.6"
-        android:scaleType="centerCrop"
-        android:src="@drawable/login_background" />-->
+   <!--/>-->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,8 +19,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.8"
+            android:orientation="vertical"
             android:gravity="bottom">
-
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -35,6 +30,16 @@
                 android:textColor="@color/white"
                 android:textSize="40dp"
                 android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/loginimg"
+                android:layout_width="wrap_content"
+                android:layout_height="90dp"
+                android:layout_gravity="center"
+                android:alpha="9"
+                android:scaleType="centerInside"
+                android:layout_marginTop="18dp"
+                android:src="@drawable/mapiconshadow"/>
+
         </LinearLayout>
 
         <LinearLayout
@@ -46,17 +51,17 @@
 
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/LoginTextInputLayoutStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/LoginTextInputLayoutStyle"
-                android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:hint="Enter Email or Phone Number"
                 android:fontFamily="sans-serif"
+                android:hint="Enter Email or Phone Number"
                 android:textColor="@color/white"
-                android:textColorHint="@color/white"
-                >
+                android:textColorHint="@color/white">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtEmail"
                     android:layout_width="match_parent"
@@ -69,26 +74,26 @@
                     android:importantForAutofill="no"
                     android:maxLines="1"
                     android:textColor="@color/white"
-                    android:textColorHint="@color/white"
-                    />
+                    android:textColorHint="@color/white" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/LoginTextInputLayoutStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/LoginTextInputLayoutStyle"
-                android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:hint="Enter Your Password"
                 android:fontFamily="sans-serif"
+                android:hint="Enter Your Password"
                 android:textColor="@color/white"
-                android:textColorHint="@color/white"
-                >
+                android:textColorHint="@color/white">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtPassword"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+
                     android:backgroundTint="@color/white"
                     android:drawableStart="@drawable/ic_lock"
                     android:drawablePadding="10dp"
@@ -98,15 +103,15 @@
                     android:inputType="textPassword"
                     android:maxLines="1"
                     android:textColor="@color/white"
-                    android:textColorHint="@color/white"
-                    />
+                    android:textColorHint="@color/white" />
             </com.google.android.material.textfield.TextInputLayout>
 
 
             <TextView
                 android:id="@+id/txtForgetPassword"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="end"
                 android:layout_marginHorizontal="30dp"
                 android:gravity="end"
                 android:text="Forget password?"
@@ -135,12 +140,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="30dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="50dp"
+                android:backgroundTint="@color/cardview_dark_background"
                 android:padding="15dp"
-                android:text="Don,t have Account,Click here "
-                android:textSize="12sp"
+                android:text="Don,t have Account,Click here!! "
+                android:textSize="14sp"
                 android:textStyle="bold"
-                app:cornerRadius="20dp"
+                app:cornerRadius="5dp"
                 app:elevation="10dp" />
 
 
