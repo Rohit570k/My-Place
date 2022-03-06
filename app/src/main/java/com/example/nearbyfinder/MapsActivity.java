@@ -1,16 +1,22 @@
 package com.example.nearbyfinder;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -22,22 +28,28 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.example.nearbyfinder.Activity.LoginActivity;
 import com.example.nearbyfinder.Activity.AccountsActivity;
+import com.example.nearbyfinder.Adapters.TomPlacesDetailAdapter;
 import com.example.nearbyfinder.Constants.AllConstants;
 import com.example.nearbyfinder.Model.PlaceModel.TomResponseModel;
 import com.example.nearbyfinder.Model.PoiGroupSet;
 import com.example.nearbyfinder.WebServices.RetrofitApi;
 import com.example.nearbyfinder.WebServices.RetrofitClient;
 import com.example.nearbyfinder.Model.TomNearbyPlaceModel;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -49,6 +61,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import com.google.android.material.chip.Chip;
@@ -66,7 +80,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback ,GoogleMap.OnMarkerClickListener {
 
     private static final String TAG = "MAPSACTIVTY";
     private GoogleMap mMap;
@@ -92,6 +106,7 @@ private FirebaseAuth mAuth;
 
     private List<TomNearbyPlaceModel> tomNearbyPlaceModelList;
     private Marker currentMarker;
+    RecyclerView placesRecyclerView;
 
 
     @Override
@@ -108,6 +123,7 @@ private FirebaseAuth mAuth;
         mAuth=FirebaseAuth.getInstance();
         retrofitApi= RetrofitClient.getRetrofitClient().create(RetrofitApi.class);
         tomNearbyPlaceModelList=new ArrayList<>();
+        placesRecyclerView=findViewById(R.id.placesRecyclerView);
 
 //        materialSearchBar = findViewById(R.id.searchBar);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -314,6 +330,7 @@ private FirebaseAuth mAuth;
     }
 
 
+
     /**
      * Prompts the user for permission to use the device location.
      */
@@ -398,6 +415,7 @@ private FirebaseAuth mAuth;
                 Log.d("MYACTIVITY", "updateLocationUI: " + "HASCAME");
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setTiltGesturesEnabled(true);
+                mMap.setOnMarkerClickListener(this::onMarkerClick);
                 //mMap.getUiSettings().setMyLocationButtonEnabled(true);
                 getLocationUpdate();
             } else {
@@ -432,8 +450,42 @@ private FirebaseAuth mAuth;
         };
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient=LocationServices.getFusedLocationProviderClient(this);
-        startLocationUpdates();
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
 
+        SettingsClient settingsClient = LocationServices.getSettingsClient(MapsActivity.this);
+        Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(builder.build());
+
+        task.addOnSuccessListener(MapsActivity.this, new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                startLocationUpdates();
+            }
+        });
+
+        task.addOnFailureListener(MapsActivity.this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    ResolvableApiException resolvable = (ResolvableApiException) e;
+                    try {
+                        resolvable.startResolutionForResult(MapsActivity.this, 50);
+                    } catch (IntentSender.SendIntentException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 50) {
+            if (resultCode == RESULT_OK) {
+                startLocationUpdates();
+            }
+        }
     }
 
     private void startLocationUpdates() {
@@ -493,6 +545,8 @@ private FirebaseAuth mAuth;
                             currentLocation = task.getResult();
                             if (currentLocation != null) {
                                 moveCameraToLocation(currentLocation);
+                                //placesRecyclerView.setAlpha(0);
+                                placesRecyclerView.setAdapter(null);
                             } else {
                                 Log.d(TAG, "Current location is null. Using defaults.");
                                 Log.e(TAG, "Exception: %s"+ task.getException());
@@ -574,9 +628,12 @@ private FirebaseAuth mAuth;
                                 addMarker(response.body().getTomNearbyPlaceModelList().get(i), i);
                             }
 
+                            setUpRecyclerview();
                         }else{
                             mMap.clear();
                             tomNearbyPlaceModelList.clear();
+
+                            setUpRecyclerview();
                             //If not found in 5km then we add 1km to request
                             //and again make a request aPi call
                             searchRadius+=1000;
@@ -621,6 +678,44 @@ private FirebaseAuth mAuth;
         Canvas canvas = new Canvas(bitmap);
         background.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    private void setUpRecyclerview() {
+
+//placesRecyclerView.setAlpha(1);
+        placesRecyclerView.setLayoutManager(new LinearLayoutManager(MapsActivity.this, LinearLayoutManager.HORIZONTAL,false));
+        placesRecyclerView.setHasFixedSize(false);
+        TomPlacesDetailAdapter tomPlacesDetailAdapter = new TomPlacesDetailAdapter(tomNearbyPlaceModelList);
+        placesRecyclerView.setAdapter(tomPlacesDetailAdapter);
+        SnapHelper snapHelper = new PagerSnapHelper();
+        placesRecyclerView.setOnFlingListener(null);
+        snapHelper.attachToRecyclerView(placesRecyclerView);
+
+       placesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+
+                int position = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
+                if (position > -1) {
+                    TomNearbyPlaceModel tomNearbyPlaceModel = tomNearbyPlaceModelList.get(position);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(tomNearbyPlaceModel.getPosition().getLat(),
+                            tomNearbyPlaceModel.getPosition().getLon()), 17));
+                }
+            }
+        });
+
+
+    }
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        int markerTag = (int) marker.getTag();
+        Log.d("TAG", "onMarkerClick: " + markerTag);
+
+       placesRecyclerView.scrollToPosition(markerTag);
+        return false;
     }
 
     @Override

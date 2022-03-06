@@ -12,7 +12,6 @@ public class TomResponseModel {
     @Expose
     private List<TomNearbyPlaceModel> tomNearbyPlaceModelList;
 
-    @SerializedName("err")
     public List<TomNearbyPlaceModel> getTomNearbyPlaceModelList() {
         return tomNearbyPlaceModelList;
     }

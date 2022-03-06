@@ -107,16 +107,16 @@
             </com.google.android.material.textfield.TextInputLayout>
 
 
-            <TextView
-                android:id="@+id/txtForgetPassword"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginHorizontal="30dp"
-                android:gravity="end"
-                android:text="Forget password?"
-                android:textColor="@color/white"
-                android:textSize="20dp" />
+<!--            <TextView-->
+<!--                android:id="@+id/txtForgetPassword"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="end"-->
+<!--                android:layout_marginHorizontal="30dp"-->
+<!--                android:gravity="end"-->
+<!--                android:text="Forget password?"-->
+<!--                android:textColor="@color/white"-->
+<!--                android:textSize="20dp" />-->
 
 
             <com.google.android.material.button.MaterialButton

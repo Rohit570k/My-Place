@@ -51,9 +51,9 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, SignUpActivity.class));
         });
 
-        binding.txtForgetPassword.setOnClickListener(view -> {
-            startActivity(new Intent(LoginActivity.this, ForgetActivity.class));
-        });
+//        binding.txtForgetPassword.setOnClickListener(view -> {
+//            startActivity(new Intent(LoginActivity.this, ForgetActivity.class));
+//        });
         binding.btnLogin.setOnClickListener(view -> {
             if (areFieldReady()) {
                 login();
