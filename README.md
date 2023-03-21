@@ -5,12 +5,13 @@ My Place App
   user's current location.
 - User can create account and login , with the correct credential
  and can also edit account details further
-- `Can send email verfication on mail so user have to  sign up with valid email`.
+- `email verfication on mail so user have to  sign up with valid email`.
 - User can login with either phone nos or password.
-- User details are stored using Realtime database of Firebase
+- User login details are stored using Realtime database of Firebase
 
-- Used Google map sdk for displaying map 
-- And TomTom Map Api to display and the nearby place data 
+- Integrated  Google map sdk for displaying mapview inside our app.
+- Used TomTom Map Api to display and the nearby place data 
+- Integrated Firebase authentication service, and its realtime database.
 
  **You can Download apk from [here](https://github.com/Rohit570git-hub/My-Place/tree/main/apk)**
 
@@ -23,3 +24,8 @@ My Place App
 **Database Screenshot**
 
 <img src="https://user-images.githubusercontent.com/76242077/155273367-25db7ca4-c4ce-4d55-b770-c3cdf499ec94.jpg" alt ="myappdb"  width="400" height="200">
+
+**App Workflow**
+
+https://user-images.githubusercontent.com/76242077/226688454-9583dade-b653-43a6-9127-149dce33bd85.mp4
+
